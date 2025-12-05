@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  hotwords-app:
+    build: .
+    container_name: hotwords-analysis
+    ports:
+      - "7070:5000"
+    volumes:
+      - ./test_results:/app/test_results
+      - ./uploads:/app/uploads
+    environment:
+      - FLASK_ENV=production
+    restart: unless-stopped
+    networks:
+      - hotwords-network
+
+networks:
+  hotwords-network:
+    driver: bridge
