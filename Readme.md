@@ -157,7 +157,7 @@ services:
   hotwords-app:
     build: .                    # 构建镜像
     ports:
-      - "5000:5000"            # 端口映射 (主机:容器)
+      - "7070:5000"            # 端口映射 (主机:容器)
     volumes:
       - ./uploads:/app/uploads  # 文件上传目录
       - ./test_results:/app/test_results  # 结果输出目录
@@ -166,7 +166,7 @@ services:
 
 ### 端口修改
 
-如果 5000 端口被占用，修改 `docker-compose.yml`:
+如果 7070 端口被占用，修改 `docker-compose.yml`:
 
 ```yaml
 ports:
@@ -205,11 +205,11 @@ pip3 install docker-compose
 docker compose up -d  # 注意没有连字符
 ```
 
-#### 2. 端口 5000 被占用
+#### 2. 端口 7070 被占用
 
 ```bash
 # 查看端口占用
-lsof -i :5000
+lsof -i :7070
 
 # 修改端口映射
 vim docker-compose.yml
@@ -260,6 +260,7 @@ MIT License - 详见 [LICENSE](LICENSE)
 
 
 ⭐ 如果这个项目对你有帮助，请给个 Star！
+
 
 
 
