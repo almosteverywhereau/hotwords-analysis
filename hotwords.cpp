@@ -505,10 +505,40 @@ int main(int argc, char* argv[]) {
                 ofs << "[时间: 当前] Query #" << queryCount << " - Top-" << k << " 热词:" << std::endl;
                 for (size_t i = 0; i < topK.size(); ++i) {
                     ofs << "  " << (i+1) << ". " << topK[i].word 
-                        << " (出现 " << topK[i].count << " 次)" << std::endl;
+                        << " (出现 " << topK[i].count << " 次)";
+                    
+                    // 添加趋势信息
+                    double trend = window.getTrend(topK[i].word);
+                    if (trend > 0) {
+                        ofs << " ↑" << std::fixed << std::setprecision(1) << trend << "%";
+                    } else if (trend < 0) {
+                        ofs << " ↓" << std::fixed << std::setprecision(1) << (-trend) << "%";
+                    }
+                    ofs << std::endl;
                 }
-                ofs << std::endl;
                 
+                // 显示新兴热词
+                auto emerging = window.getEmergingWords(50.0);
+                if (!emerging.empty() && queryCount > 1) {
+                    ofs << "\n  📈 新兴热词 (增长率>50%):" << std::endl;
+                    for (size_t i = 0; i < std::min(emerging.size(), (size_t)3); ++i) {
+                        ofs << "    • " << emerging[i].first << " (+" 
+                            << std::fixed << std::setprecision(1) << emerging[i].second << "%)" << std::endl;
+                    }
+                }
+                
+                // 显示降温热词
+                auto cooling = window.getCoolingWords(30.0);
+                if (!cooling.empty() && queryCount > 1) {
+                    ofs << "  📉 降温热词 (下降率>30%):" << std::endl;
+                    for (size_t i = 0; i < std::min(cooling.size(), (size_t)3); ++i) {
+                        ofs << "    • " << cooling[i].first << " (-" 
+                            << std::fixed << std::setprecision(1) << cooling[i].second << "%)" << std::endl;
+                    }
+                }
+                
+                ofs << std::endl;
+                window.saveSnapshot(Timestamp(0, 0, 0));
                 window.printStatistics();
             }
             continue;
@@ -582,8 +612,54 @@ int main(int argc, char* argv[]) {
     std::cout << "[INFO] Out-of-order messages: " << window.getOutOfOrderCount() 
               << " (" << std::fixed << std::setprecision(2) << window.getOutOfOrderRate() << "%)" << std::endl;
     
+    // 如果查询次数少于2次，自动执行一次最终查询以便生成趋势分析
+    if (queryCount < 2 && lineCount > 0) {
+        std::cout << "[AUTO] Executing automatic final query for trend analysis..." << std::endl;
+        queryCount++;
+        
+        auto topK = window.getTopK(10);
+        
+        ofs << "\n[时间: 最终] Query #" << queryCount << " - Top-10 热词（自动查询）:" << std::endl;
+        for (size_t i = 0; i < topK.size(); ++i) {
+            ofs << "  " << (i+1) << ". " << topK[i].word 
+                << " (出现 " << topK[i].count << " 次)";
+            
+            // 添加趋势信息
+            double trend = window.getTrend(topK[i].word);
+            if (trend > 0) {
+                ofs << " ↑" << std::fixed << std::setprecision(1) << trend << "%";
+            } else if (trend < 0) {
+                ofs << " ↓" << std::fixed << std::setprecision(1) << (-trend) << "%";
+            }
+            ofs << std::endl;
+        }
+        
+        // 显示新兴热词
+        auto emerging = window.getEmergingWords(50.0);
+        if (!emerging.empty() && queryCount > 1) {
+            ofs << "\n  📈 新兴热词 (增长率>50%):" << std::endl;
+            for (size_t i = 0; i < std::min(emerging.size(), (size_t)3); ++i) {
+                ofs << "    • " << emerging[i].first << " (+" 
+                    << std::fixed << std::setprecision(1) << emerging[i].second << "%)" << std::endl;
+            }
+        }
+        
+        // 显示降温热词
+        auto cooling = window.getCoolingWords(30.0);
+        if (!cooling.empty() && queryCount > 1) {
+            ofs << "  📉 降温热词 (下降率>30%):" << std::endl;
+            for (size_t i = 0; i < std::min(cooling.size(), (size_t)3); ++i) {
+                ofs << "    • " << cooling[i].first << " (-" 
+                    << std::fixed << std::setprecision(1) << cooling[i].second << "%)" << std::endl;
+            }
+        }
+        
+        ofs << std::endl;
+        window.saveSnapshot(Timestamp(99, 99, 99));
+    }
+    
     // 输出最终统计
-    ofs << "===== 最终统计 =====" << std::endl;
+    ofs << "\n===== 最终统计 =====" << std::endl;
     ofs << "处理的总行数: " << lineCount << std::endl;
     ofs << "处理的消息数: " << window.getTotalMessageCount() << std::endl;
     ofs << "查询次数: " << queryCount << std::endl;

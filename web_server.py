@@ -126,7 +126,8 @@ def analyze_sample(sample_name):
     """分析示例文件"""
     try:
         # 验证文件名
-        if sample_name not in ['input1.txt', 'input2.txt', 'input3.txt']:
+        allowed_files = ['input1.txt', 'input2.txt', 'input3.txt', 'input_out_of_order.txt']
+        if sample_name not in allowed_files:
             return jsonify({'success': False, 'error': '无效的示例文件'}), 400
         
         if not os.path.exists(sample_name):

@@ -409,9 +409,10 @@
                     <div class="control-group">
                         <label><i class="fas fa-file-alt"></i> 输入文件</label>
                         <select id="inputFile">
-                            <option value="input1.txt">input1.txt (12,870行)</option>
-                            <option value="input2.txt">input2.txt (11,698行)</option>
-                            <option value="input3.txt">input3.txt (14,930行)</option>
+                            <option value="input1.txt">input1.txt (12,870行 - 标准数据)</option>
+                            <option value="input2.txt">input2.txt (11,698行 - 标准数据)</option>
+                            <option value="input3.txt">input3.txt (14,930行 - 标准数据)</option>
+                            <option value="input_out_of_order.txt">input_out_of_order.txt (100行 - 乱序测试数据) 🔥</option>
                         </select>
                     </div>
                     
@@ -467,59 +468,135 @@
                     <i class="fas fa-info-circle"></i> <strong>高级功能配置</strong> - 展示已实现的6个高级功能
                 </div>
                 
+                <!-- 功能1: 敏感词过滤 -->
                 <div class="result-card">
-                    <h3><i class="fas fa-cogs"></i> 已实现的高级功能（6/6）</h3>
-                    <div class="stats-grid">
-                        <div class="stat-item">
-                            <div class="label"><i class="fas fa-filter"></i> 敏感词过滤</div>
-                            <div class="value"><span class="badge badge-success">✓</span></div>
-                            <small style="color: #666;">已加载4个默认敏感词</small>
-                        </div>
-                        <div class="stat-item">
-                            <div class="label"><i class="fas fa-random"></i> 乱序数据处理</div>
-                            <div class="value"><span class="badge badge-success">✓</span></div>
-                            <small style="color: #666;">实时检测并统计</small>
-                        </div>
-                        <div class="stat-item">
-                            <div class="label"><i class="fas fa-chart-line"></i> 趋势分析</div>
-                            <div class="value"><span class="badge badge-success">✓</span></div>
-                            <small style="color: #666;">新兴词(>50%)降温词(>30%)</small>
-                        </div>
-                        <div class="stat-item">
-                            <div class="label"><i class="fas fa-history"></i> 历史查询</div>
-                            <div class="value"><span class="badge badge-success">✓</span></div>
-                            <small style="color: #666;">每次查询自动快照</small>
-                        </div>
-                        <div class="stat-item">
-                            <div class="label"><i class="fas fa-expand-arrows-alt"></i> 动态窗口</div>
-                            <div class="value"><span class="badge badge-success">✓</span></div>
-                            <small style="color: #666;">1分-1小时可配置</small>
-                        </div>
-                        <div class="stat-item">
-                            <div class="label"><i class="fas fa-terminal"></i> CLI交互</div>
-                            <div class="value"><span class="badge badge-success">✓</span></div>
-                            <small style="color: #666;">实时进度+统计</small>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="control-panel">
+                    <h3><i class="fas fa-filter"></i> 1. 敏感词过滤配置</h3>
+                    <p style="color: #666; margin-bottom: 15px;">配置需要过滤的敏感词，分析时将自动屏蔽这些词汇</p>
+                    
                     <div class="control-group">
-                        <label><i class="fas fa-ban"></i> 停用词配置</label>
-                        <textarea id="stopWords" placeholder="一行一个停用词&#10;例如：的、了、是"></textarea>
-                        <small style="color: #666; margin-top: 5px; display: block;">
-                            当前已加载 <strong>1279</strong> 个默认停用词
-                        </small>
+                        <label>敏感词列表 (每行一个)</label>
+                        <textarea id="sensitiveWords" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" placeholder="输入敏感词，每行一个&#10;例如：&#10;广告&#10;垃圾&#10;spam">广告
+垃圾
+spam
+敏感</textarea>
                     </div>
                     
                     <div class="control-group">
-                        <label><i class="fas fa-shield-alt"></i> 敏感词配置</label>
-                        <textarea id="sensitiveWords" placeholder="一行一个敏感词&#10;例如：广告、垃圾"></textarea>
-                        <small style="color: #666; margin-top: 5px; display: block;">
-                            当前已加载 <strong>4</strong> 个默认敏感词
-                        </small>
+                        <label>停用词配置 (可选)</label>
+                        <textarea id="customStopWords" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" placeholder="补充停用词，每行一个&#10;系统已默认加载常用停用词">的
+了
+是</textarea>
+                    </div>
+                    
+                    <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+                        <strong>工作原理：</strong>
+                        <ul style="margin-left: 20px; margin-top: 10px; color: #666;">
+                            <li>分词时自动过滤敏感词，不计入统计</li>
+                            <li>支持自定义敏感词和停用词列表</li>
+                            <li>过滤统计会在结果中显示</li>
+                        </ul>
                     </div>
                 </div>
+                
+                <!-- 功能2: 乱序/迟到数据处理 -->
+                <div class="result-card">
+                    <h3><i class="fas fa-random"></i> 2. 乱序/迟到数据处理</h3>
+                    <p style="color: #666; margin-bottom: 15px;">自动检测并正确处理时间戳乱序的数据</p>
+                    
+                    <div id="outOfOrderStats" class="stats-grid">
+                        <div class="stat-item">
+                            <div class="label">乱序消息数</div>
+                            <div class="value" id="outOfOrderCount">-</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="label">乱序比例</div>
+                            <div class="value" id="outOfOrderRate">-</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="label">处理策略</div>
+                            <div class="value" style="font-size: 1.2em;">✓ 正确统计</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+                        <strong>处理机制：</strong>
+                        <ul style="margin-left: 20px; margin-top: 10px; color: #666;">
+                            <li>实时检测时间戳逆序的消息</li>
+                            <li>正确维护滑动窗口，不丢失数据</li>
+                            <li>统计乱序率，便于数据质量监控</li>
+                            <li>乱序数据仍然参与词频统计</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- 功能3: 趋势分析 -->
+                <div class="result-card">
+                    <h3><i class="fas fa-chart-line"></i> 3. 趋势分析 - 新兴词与降温词</h3>
+                    <p style="color: #666; margin-bottom: 15px;">自动识别词频快速上升的新兴词和快速下降的降温词</p>
+                    
+                    <div class="control-group">
+                        <label>新兴词检测阈值 (%)</label>
+                        <input type="number" id="emergingThreshold" value="50" min="10" max="200" 
+                               style="padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        <small style="color: #666; display: block; margin-top: 5px;">词频增长率超过此值视为新兴词（默认50%）</small>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>降温词检测阈值 (%)</label>
+                        <input type="number" id="coolingThreshold" value="30" min="10" max="100"
+                               style="padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        <small style="color: #666; display: block; margin-top: 5px;">词频下降率超过此值视为降温词（默认30%）</small>
+                    </div>
+                    
+                    <div id="trendAnalysis" style="margin-top: 20px;">
+                        <h4 style="color: #28a745;">📈 新兴热词</h4>
+                        <div id="emergingWords" style="padding: 15px; background: #d4edda; border-radius: 5px; margin-bottom: 15px;">
+                            <p style="color: #666;">分析后将显示词频增长最快的词汇...</p>
+                        </div>
+                        
+                        <h4 style="color: #dc3545;">📉 降温热词</h4>
+                        <div id="coolingWords" style="padding: 15px; background: #f8d7da; border-radius: 5px;">
+                            <p style="color: #666;">分析后将显示词频下降最快的词汇...</p>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+                        <strong>算法说明：</strong>
+                        <ul style="margin-left: 20px; margin-top: 10px; color: #666;">
+                            <li>计算公式：增长率 = (当前词频 - 上次词频) / 上次词频 × 100%</li>
+                            <li>每次查询时保存窗口快照，用于趋势对比</li>
+                            <li>显示前3个增长最快/下降最快的词汇</li>
+                            <li>帮助及时发现热点话题变化</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- 功能4: 历史查询 -->
+                <div class="result-card">
+                    <h3><i class="fas fa-history"></i> 4. 历史快照与离线分析</h3>
+                    <p style="color: #666; margin-bottom: 15px;">每次查询自动保存窗口快照，支持历史回溯和趋势分析</p>
+                    
+                    <div id="historySnapshots">
+                        <h4>查询历史记录</h4>
+                        <div id="snapshotList" style="max-height: 400px; overflow-y: auto;">
+                            <p style="color: #666; padding: 20px; text-align: center;">暂无历史记录，请先执行分析...</p>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+                        <strong>功能特性：</strong>
+                        <ul style="margin-left: 20px; margin-top: 10px; color: #666;">
+                            <li>每次Top-K查询自动保存当前窗口状态</li>
+                            <li>可查看任意历史时刻的热词排行</li>
+                            <li>支持导出历史报告（JSON格式）</li>
+                            <li>用于离线分析和数据挖掘</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <button class="btn" onclick="startAdvancedAnalysis()" style="width: 100%; margin-top: 20px;">
+                    <i class="fas fa-magic"></i> 运行高级分析
+                </button>
             </div>
             
             <!-- 性能监控标签 -->
@@ -671,6 +748,24 @@
                 if (data.success) {
                     // 直接使用返回的数据
                     displayResults(data);
+                    
+                    // 同时更新高级功能标签中的数据
+                    const stats = data.stats || {};
+                    const fullOutput = data.full_output || '';
+                    
+                    // 更新乱序统计
+                    const outOfOrderCount = stats.out_of_order || 0;
+                    const totalMessages = stats.total_messages || stats.total_lines || 1;
+                    const outOfOrderRate = ((outOfOrderCount / totalMessages) * 100).toFixed(2);
+                    
+                    document.getElementById('outOfOrderCount').textContent = outOfOrderCount;
+                    document.getElementById('outOfOrderRate').textContent = outOfOrderRate + '%';
+                    
+                    // 更新趋势分析
+                    displayTrendAnalysis(fullOutput);
+                    
+                    // 更新历史快照
+                    displayHistorySnapshots(fullOutput);
                 } else {
                     alert('分析失败：' + (data.error || '未知错误'));
                 }
@@ -799,6 +894,306 @@
             
             // 如果没有找到有10个词的查询，返回词数最多的那个
             return bestWords.length > 0 ? bestWords : currentWords;
+        }
+        
+        // 高级分析功能
+        async function startAdvancedAnalysis() {
+            const inputFile = document.getElementById('inputFile').value;
+            const windowSize = document.getElementById('windowSize').value;
+            const sensitiveWords = document.getElementById('sensitiveWords').value;
+            const customStopWords = document.getElementById('customStopWords').value;
+            
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 分析中...';
+            
+            try {
+                const formData = new FormData();
+                formData.append('window_size', windowSize);
+                
+                // 添加敏感词配置
+                if (sensitiveWords.trim()) {
+                    formData.append('sensitive_words', sensitiveWords);
+                }
+                
+                // 添加停用词配置
+                if (customStopWords.trim()) {
+                    formData.append('stop_words', customStopWords);
+                }
+                
+                const response = await fetch(`/api/analyze-sample/${inputFile}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayAdvancedResults(data);
+                } else {
+                    alert('分析失败：' + (data.error || '未知错误'));
+                }
+            } catch (error) {
+                alert('请求失败：' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-magic"></i> 运行高级分析';
+            }
+        }
+        
+        function displayAdvancedResults(data) {
+            const stats = data.stats || {};
+            const fullOutput = data.full_output || '';
+            
+            // 1. 显示乱序数据统计
+            const outOfOrderCount = stats.out_of_order || 0;
+            const totalMessages = stats.total_messages || stats.total_lines || 1;
+            const outOfOrderRate = ((outOfOrderCount / totalMessages) * 100).toFixed(2);
+            
+            document.getElementById('outOfOrderCount').textContent = outOfOrderCount;
+            document.getElementById('outOfOrderRate').textContent = outOfOrderRate + '%';
+            
+            // 2. 解析趋势分析数据
+            displayTrendAnalysis(fullOutput);
+            
+            // 3. 显示历史快照
+            displayHistorySnapshots(fullOutput);
+            
+            // 切换到高级功能标签显示结果
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelector('.tab:nth-child(2)').classList.add('active');
+            document.getElementById('tab-advanced').classList.add('active');
+            
+            // 同时更新基本分析结果
+            displayResults(data);
+        }
+        
+        function displayTrendAnalysis(output) {
+            const lines = output.split('\n');
+            let emergingWords = [];
+            let coolingWords = [];
+            let inEmergingSection = false;
+            let inCoolingSection = false;
+            
+            for (const line of lines) {
+                const trimmed = line.trim();
+                
+                // 检测新兴词部分
+                if (trimmed.includes('📈') && trimmed.includes('新兴')) {
+                    inEmergingSection = true;
+                    inCoolingSection = false;
+                    continue;
+                }
+                
+                // 检测降温词部分
+                if (trimmed.includes('📉') && trimmed.includes('降温')) {
+                    inCoolingSection = true;
+                    inEmergingSection = false;
+                    continue;
+                }
+                
+                // 退出特殊部分
+                if (trimmed.startsWith('[时间:') || trimmed.startsWith('===') || trimmed === '') {
+                    inEmergingSection = false;
+                    inCoolingSection = false;
+                    continue;
+                }
+                
+                // 解析新兴词
+                if (inEmergingSection) {
+                    // 格式: • 博望坡 (+156.3%)
+                    const match = trimmed.match(/•\s+(.+?)\s+\(\+?([\d.]+)%\)/);
+                    if (match) {
+                        emergingWords.push({
+                            word: match[1].trim(),
+                            rate: parseFloat(match[2])
+                        });
+                    }
+                }
+                
+                // 解析降温词
+                if (inCoolingSection) {
+                    // 格式: • 徐庶 (-45.2%)
+                    const match = trimmed.match(/•\s+(.+?)\s+\(-?([\d.]+)%\)/);
+                    if (match) {
+                        coolingWords.push({
+                            word: match[1].trim(),
+                            rate: parseFloat(match[2])
+                        });
+                    }
+                }
+            }
+            
+            // 显示新兴词
+            const emergingDiv = document.getElementById('emergingWords');
+            if (emergingWords.length > 0) {
+                emergingDiv.innerHTML = emergingWords.map(item => `
+                    <div style="padding: 8px; margin: 5px 0; background: white; border-radius: 5px; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: bold; color: #28a745;">${item.word}</span>
+                        <span style="background: #28a745; color: white; padding: 4px 12px; border-radius: 15px; font-size: 0.9em;">
+                            ↑ ${item.rate.toFixed(1)}%
+                        </span>
+                    </div>
+                `).join('');
+            } else {
+                emergingDiv.innerHTML = '<p style="color: #666; text-align: center;">暂无新兴词（需要多次查询才能计算趋势）</p>';
+            }
+            
+            // 显示降温词
+            const coolingDiv = document.getElementById('coolingWords');
+            if (coolingWords.length > 0) {
+                coolingDiv.innerHTML = coolingWords.map(item => `
+                    <div style="padding: 8px; margin: 5px 0; background: white; border-radius: 5px; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: bold; color: #dc3545;">${item.word}</span>
+                        <span style="background: #dc3545; color: white; padding: 4px 12px; border-radius: 15px; font-size: 0.9em;">
+                            ↓ ${item.rate.toFixed(1)}%
+                        </span>
+                    </div>
+                `).join('');
+            } else {
+                coolingDiv.innerHTML = '<p style="color: #666; text-align: center;">暂无降温词（需要多次查询才能计算趋势）</p>';
+            }
+        }
+        
+        function displayHistorySnapshots(output) {
+            const lines = output.split('\n');
+            const queries = [];
+            let currentQuery = null;
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                
+                // 检测Query标记
+                if (line.includes('Query #')) {
+                    if (currentQuery) {
+                        queries.push(currentQuery);
+                    }
+                    
+                    // 提取时间和Query号
+                    const timeMatch = line.match(/\[时间:\s*(.+?)\]/);
+                    const queryMatch = line.match(/Query #(\d+)/);
+                    const topKMatch = line.match(/Top-(\d+)/);
+                    
+                    currentQuery = {
+                        queryNum: queryMatch ? queryMatch[1] : '?',
+                        timestamp: timeMatch ? timeMatch[1] : '未知',
+                        topK: topKMatch ? topKMatch[1] : '10',
+                        words: []
+                    };
+                    continue;
+                }
+                
+                // 收集热词
+                if (currentQuery) {
+                    const wordMatch = line.match(/^\d+\.\s+(.+?)\s+\(出现\s+(\d+)\s+次\)/);
+                    if (wordMatch) {
+                        currentQuery.words.push({
+                            word: wordMatch[1].trim(),
+                            count: parseInt(wordMatch[2])
+                        });
+                    }
+                    
+                    // 检测Query结束
+                    if (line.includes('📈') || line.includes('📉') || line.includes('===') || 
+                        (currentQuery.words.length > 0 && line.startsWith('[时间:'))) {
+                        if (currentQuery.words.length > 0) {
+                            queries.push(currentQuery);
+                            currentQuery = null;
+                        }
+                    }
+                }
+            }
+            
+            // 添加最后一个查询
+            if (currentQuery && currentQuery.words.length > 0) {
+                queries.push(currentQuery);
+            }
+            
+            // 显示历史记录
+            const snapshotList = document.getElementById('snapshotList');
+            if (queries.length > 0) {
+                snapshotList.innerHTML = queries.map((query, index) => `
+                    <div style="padding: 15px; margin: 10px 0; background: white; border-radius: 8px; border-left: 4px solid #667eea;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h4 style="margin: 0; color: #667eea;">
+                                <i class="fas fa-clock"></i> Query #${query.queryNum}
+                            </h4>
+                            <span style="color: #666; font-size: 0.9em;">
+                                <i class="fas fa-calendar"></i> ${query.timestamp}
+                            </span>
+                        </div>
+                        <div style="font-size: 0.9em; color: #666; margin-bottom: 8px;">
+                            Top-${query.topK} 热词 · 共 ${query.words.length} 个词
+                        </div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                            ${query.words.slice(0, 5).map(w => `
+                                <span style="background: #f0f0f0; padding: 5px 12px; border-radius: 15px; font-size: 0.85em;">
+                                    ${w.word} (${w.count})
+                                </span>
+                            `).join('')}
+                            ${query.words.length > 5 ? '<span style="color: #999; padding: 5px;">...</span>' : ''}
+                        </div>
+                        <button onclick="viewSnapshotDetail(${index})" style="margin-top: 10px; padding: 6px 15px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.85em;">
+                            <i class="fas fa-eye"></i> 查看详情
+                        </button>
+                    </div>
+                `).join('');
+                
+                // 保存查询数据供详情查看使用
+                window.snapshotData = queries;
+            } else {
+                snapshotList.innerHTML = '<p style="color: #666; padding: 20px; text-align: center;">暂无历史记录</p>';
+            }
+        }
+        
+        function viewSnapshotDetail(index) {
+            if (!window.snapshotData || !window.snapshotData[index]) return;
+            
+            const snapshot = window.snapshotData[index];
+            const detailHTML = `
+                <div style="padding: 20px;">
+                    <h3><i class="fas fa-history"></i> Query #${snapshot.queryNum} 详细信息</h3>
+                    <p><strong>时间戳:</strong> ${snapshot.timestamp}</p>
+                    <p><strong>Top-K:</strong> ${snapshot.topK}</p>
+                    <h4 style="margin-top: 20px;">完整热词列表:</h4>
+                    <ol style="margin-left: 20px;">
+                        ${snapshot.words.map(w => `
+                            <li style="margin: 5px 0;">${w.word} - ${w.count}次</li>
+                        `).join('')}
+                    </ol>
+                    <button onclick="exportSnapshot(${index})" style="margin-top: 20px; padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        <i class="fas fa-download"></i> 导出为JSON
+                    </button>
+                </div>
+            `;
+            
+            // 创建模态框显示详情
+            const modal = document.createElement('div');
+            modal.style = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; display: flex; align-items: center; justify-content: center;';
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 10px; max-width: 600px; max-height: 80vh; overflow-y: auto; position: relative;">
+                    ${detailHTML}
+                    <button onclick="this.closest('div').parentElement.remove()" style="position: absolute; top: 10px; right: 10px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;">
+                        ×
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        function exportSnapshot(index) {
+            if (!window.snapshotData || !window.snapshotData[index]) return;
+            
+            const snapshot = window.snapshotData[index];
+            const jsonStr = JSON.stringify(snapshot, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `snapshot_query${snapshot.queryNum}_${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
         }
         
         function drawChart(words) {
