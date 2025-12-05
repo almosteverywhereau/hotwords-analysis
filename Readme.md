@@ -7,7 +7,7 @@
 
 > 一个高性能的实时热词统计与分析系统，支持中文分词、滑动窗口分析、Web 可视化界面。
 
-![系统演示](image.png)
+![系统演示](images.png)
 
 ---
 
@@ -326,5 +326,6 @@ MIT License - 详见 [LICENSE](LICENSE)
 - [Chart.js](https://www.chartjs.org/) - 数据可视化
 
 ---
+
 
 ⭐ 如果这个项目对你有帮助，请给个 Star！
