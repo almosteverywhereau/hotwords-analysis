@@ -69,31 +69,7 @@ docker-compose up -d --build
 
 ---
 
-## � 使用指南
 
-### Web 界面操作
-
-1. **上传文件**: 点击"选择文件"，支持 `.txt` 格式（UTF-8 编码）
-2. **设置参数**:
-   - **窗口大小 (W)**: 每次分析的句子数量，默认 100
-   - **滑动步长 (S)**: 窗口移动步数，默认 10
-   - **Top-K**: 显示前 K 个热词，默认 10
-3. **查看结果**:
-   - 📊 Top-10 热词排行榜
-   - 📈 词频变化趋势图
-   - � 热词详细统计表
-
-### 命令行使用
-
-```bash
-# 直接使用 C++ 程序分析
-./hotwords <窗口大小> <滑动步长> <TopK> <输入文件> <输出文件>
-
-# 示例
-./hotwords 100 10 10 input1.txt output.txt
-```
-
----
 
 ## 🛠️ 本地部署（不使用 Docker）
 
@@ -131,24 +107,11 @@ python3 web_server.py
 # http://localhost:5000
 ```
 
-### 或使用快速启动脚本
-
-```bash
-chmod +x start.sh
-./start.sh
-# 选择部署方式（Docker 或本地）
-```
-
 ---
 
 ## 📊 测试数据
 
-项目自带 3 个测试文件:
-
-- **input1.txt**: 小型数据集 (~100 句)
-- **input2.txt**: 中型数据集 (~500 句)
-- **input3.txt**: 大型数据集 (~2000 句)
-
+项目自带 4 个测试文件:
 直接在 Web 界面上传测试即可！
 
 ---
@@ -161,7 +124,6 @@ hotwords-analysis/
 ├── 🌐 web_server.py          # Flask Web 服务器
 ├── 🐳 Dockerfile             # Docker 镜像配置
 ├── 🐳 docker-compose.yml     # Docker Compose 编排
-├── 🚀 start.sh               # 快速启动脚本
 ├── 🔨 Makefile               # 编译配置
 ├── 📋 templates/
 │   └── index.html           # Web 前端界面
@@ -171,9 +133,6 @@ hotwords-analysis/
 │   ├── hmm_model.utf8      # HMM 模型
 │   ├── idf.utf8            # IDF 词典
 │   └── stop_words.utf8     # 停用词表
-├── 📝 input1.txt            # 测试数据 1
-├── 📝 input2.txt            # 测试数据 2
-└── 📝 input3.txt            # 测试数据 3
 ```
 
 ---
@@ -286,31 +245,6 @@ g++ -std=c++17 -O3 -o hotwords hotwords.cpp -I./cppjieba
 pip3 install flask flask-cors
 ```
 
-#### 3. 权限问题
-
-```bash
-# 添加执行权限
-chmod +x hotwords
-chmod +x start.sh
-```
-
-### 分析结果问题
-
-#### Q: Top-K 显示少于 10 个词？
-
-**这是正常现象！** 可能原因:
-
-- ✅ 窗口内有效词汇少于 K
-- ✅ 滑动到文件末尾，剩余句子不足
-- ✅ 停用词过滤后词汇不足
-
-**建议**:
-- 增大窗口大小
-- 减小 K 值
-- 检查输入数据质量
-
----
-
 ## 🤝 贡献
 
 欢迎贡献代码、报告问题或提出建议！
@@ -329,5 +263,6 @@ MIT License - 详见 [LICENSE](LICENSE)
 
 
 ⭐ 如果这个项目对你有帮助，请给个 Star！
+
 
 
