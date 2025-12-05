@@ -186,7 +186,6 @@ ports:
 | **中文分词** | CppJieba | 高性能分词引擎 |
 | **Web 服务** | Flask | Python Web 框架 |
 | **前端界面** | HTML/CSS/JS | 响应式界面设计 |
-| **数据可视化** | Chart.js | 动态图表展示 |
 | **容器化** | Docker | 一键部署 |
 
 ---
@@ -257,12 +256,12 @@ MIT License - 详见 [LICENSE](LICENSE)
 
 - [cppjieba](https://github.com/yanyiwu/cppjieba) - 中文分词库
 - [Flask](https://flask.palletsprojects.com/) - Web框架
-- [Chart.js](https://www.chartjs.org/) - 数据可视化
 
 ---
 
 
 ⭐ 如果这个项目对你有帮助，请给个 Star！
+
 
 
 
