@@ -19,7 +19,7 @@
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/yourusername/hotwords-analysis.git
+git clone https://github.com/almosteverywhereau/hotwords-analysis.git
 cd hotwords-analysis
 
 # 2. 一键启动（自动编译+运行）
@@ -329,3 +329,4 @@ MIT License - 详见 [LICENSE](LICENSE)
 
 
 ⭐ 如果这个项目对你有帮助，请给个 Star！
+
