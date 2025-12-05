@@ -26,7 +26,7 @@ cd hotwords-analysis
 docker-compose up -d
 
 # 3. 访问 Web 界面
-# 浏览器打开: http://localhost:5000
+# 浏览器打开: http://localhost:7070
 ```
 
 **就这么简单！** 🎉 系统会自动：
@@ -261,6 +261,7 @@ MIT License - 详见 [LICENSE](LICENSE)
 
 
 ⭐ 如果这个项目对你有帮助，请给个 Star！
+
 
 
 
