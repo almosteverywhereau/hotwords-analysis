@@ -85,7 +85,6 @@ docker-compose up -d --build
 # 1. 克隆项目
 git clone https://github.com/almosteverywhereau/hotwords-analysis.git
 cd hotwords-analysis
-cd hotwords-analysis
 
 # 2. 编译 C++ 程序
 g++ -std=c++17 -O3 -o hotwords hotwords.cpp \
@@ -261,6 +260,7 @@ MIT License - 详见 [LICENSE](LICENSE)
 
 
 ⭐ 如果这个项目对你有帮助，请给个 Star！
+
 
 
 
