@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-热词统计系统 - Web服务器
-提供REST API和Web界面
-"""
+
 
 from flask import Flask, render_template, request, jsonify, send_file
 from flask_cors import CORS
