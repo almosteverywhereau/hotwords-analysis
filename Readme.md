@@ -26,7 +26,7 @@ cd hotwords-analysis
 docker-compose up -d
 
 # 3. 访问 Web 界面
-# 浏览器打开: http://localhost:5000
+# 浏览器打开: http://localhost:7070
 ```
 
 **就这么简单！** 🎉 系统会自动：
@@ -199,7 +199,7 @@ services:
   hotwords-app:
     build: .                    # 构建镜像
     ports:
-      - "5000:5000"            # 端口映射 (主机:容器)
+      - "7070:5000"            # 端口映射 (主机:容器)
     volumes:
       - ./uploads:/app/uploads  # 文件上传目录
       - ./test_results:/app/test_results  # 结果输出目录
@@ -248,11 +248,11 @@ pip3 install docker-compose
 docker compose up -d  # 注意没有连字符
 ```
 
-#### 2. 端口 5000 被占用
+#### 2. 端口 7070 被占用
 
 ```bash
 # 查看端口占用
-lsof -i :5000
+lsof -i :7070
 
 # 修改端口映射
 vim docker-compose.yml
@@ -285,31 +285,6 @@ g++ -std=c++17 -O3 -o hotwords hotwords.cpp -I./cppjieba
 # 安装依赖
 pip3 install flask flask-cors
 ```
-
-#### 3. 权限问题
-
-```bash
-# 添加执行权限
-chmod +x hotwords
-chmod +x start.sh
-```
-
-### 分析结果问题
-
-#### Q: Top-K 显示少于 10 个词？
-
-**这是正常现象！** 可能原因:
-
-- ✅ 窗口内有效词汇少于 K
-- ✅ 滑动到文件末尾，剩余句子不足
-- ✅ 停用词过滤后词汇不足
-
-**建议**:
-- 增大窗口大小
-- 减小 K 值
-- 检查输入数据质量
-
----
 
 ## 🤝 贡献
 

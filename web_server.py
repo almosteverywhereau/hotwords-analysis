@@ -351,4 +351,4 @@ if __name__ == '__main__':
     print("  热词统计系统 Web服务器")
     print("  访问地址: http://localhost:5000")
     print("=" * 50)
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    app.run(host='0.0.0.0', port=7070, debug=False)
