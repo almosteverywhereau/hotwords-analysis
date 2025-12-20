@@ -83,15 +83,6 @@ docker-compose up -d --build
    - 📈 词频变化趋势图
    - � 热词详细统计表
 
-### 命令行使用
-
-```bash
-# 直接使用 C++ 程序分析
-./hotwords <窗口大小> <滑动步长> <TopK> <输入文件> <输出文件>
-
-# 示例
-./hotwords 100 10 10 input1.txt output.txt
-```
 
 ---
 
@@ -128,15 +119,7 @@ make
 python3 web_server.py
 
 # 5. 浏览器访问
-# http://localhost:5000
-```
-
-### 或使用快速启动脚本
-
-```bash
-chmod +x start.sh
-./start.sh
-# 选择部署方式（Docker 或本地）
+# http://localhost:7070
 ```
 
 ---
@@ -208,7 +191,7 @@ services:
 
 ### 端口修改
 
-如果 5000 端口被占用，修改 `docker-compose.yml`:
+如果 7070 端口被占用，修改 `docker-compose.yml`:
 
 ```yaml
 ports:
@@ -227,7 +210,6 @@ ports:
 | **中文分词** | CppJieba | 高性能分词引擎 |
 | **Web 服务** | Flask | Python Web 框架 |
 | **前端界面** | HTML/CSS/JS | 响应式界面设计 |
-| **数据可视化** | Chart.js | 动态图表展示 |
 | **容器化** | Docker | 一键部署 |
 
 ---
