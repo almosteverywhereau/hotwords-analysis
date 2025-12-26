@@ -1,8 +1,4 @@
 
-// 项目名称：基于滑动窗口的热词统计与分析系统
-// 功能说明：实时处理文本数据流，维护滑动窗口内的词频统计，提供Top-K查询
-// 日期：2025年12月
-
 #include "cppjieba/Jieba.hpp"
 #include <iostream>
 #include <fstream>
@@ -90,7 +86,11 @@ struct WordFreq {
 class SlidingWindow {
 private:
     int windowSize;  // 窗口大小（秒）
-    std::unordered_map<std::string, int> wordCount;  // 当前窗口内的词频统计
+    
+    // 核心存储：使用 unordered_map 实现 O(1) 的查找和更新
+    // 相比 map (红黑树 O(logN))，哈希表在频繁更新词频的场景下性能更优
+    std::unordered_map<std::string, int> wordCount;  
+    
     std::queue<std::pair<Timestamp, std::vector<std::string>>> messageQueue;  // 消息队列
     std::set<std::string> stopWords;  // 停用词集合
     std::set<std::string> sensitiveWords;  // 敏感词集合
@@ -149,7 +149,10 @@ public:
         std::cout << "[INFO] Loaded " << sensitiveWords.size() << " sensitive words." << std::endl;
     }
     
-    // 添加消息到窗口（支持乱序检测）
+    // 添加消息乱序处理策略：
+        // 1. 如果消息时间戳小于当前最新时间，标记为乱序
+        // 2. 只要消息还在窗口范围内（latestTime - windowSize），依然会被统计
+        // 3. 只有严重迟到的消息才会被丢弃（在 removeExpiredMessages 中处理）支持乱序检测）
     void addMessage(const Timestamp& ts, const std::vector<std::string>& words) {
         totalMessageCount++;
         
@@ -205,16 +208,20 @@ public:
         }
     }
     
-    // 获取Top-K热词
-    std::vector<WordFreq> getTopK(int k) const {
-        std::vector<WordFreq> result;
+    // 获result.reserve(wordCount.size()); // 预分配内存，避免多次 realloc
+        
         for (const auto& pair : wordCount) {
             result.push_back(WordFreq(pair.first, pair.second));
         }
         
-        // 排序
-        std::sort(result.begin(), result.end());
-        
+        // 性能优化：使用 partial_sort 而非 sort
+        // 当 N 很大而 K 很小时（例如 N=10000, K=10），partial_sort 只需要 O(N log K)
+        // 而全排序需要 O(N log N)。这在实时查询中能显著降低延迟。
+        if (result.size() > (size_t)k) {
+            std::partial_sort(result.begin(), result.begin() + k, result.end());
+            result.resize(k);
+        } else {
+            std::sort(result.begin(), result.end()
         // 取前K个
         if (result.size() > (size_t)k) {
             result.resize(k);

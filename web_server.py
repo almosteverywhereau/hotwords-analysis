@@ -1,14 +1,10 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-
-from flask import Flask, render_template, request, jsonify, send_file
-from flask_cors import CORS
 import subprocess
 import os
 import json
 import time
 from datetime import datetime
+from flask import Flask, render_template, request, jsonify, send_file
+from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
@@ -66,6 +62,7 @@ def analyze():
         
         # 执行分析
         cmd = ['./hotwords', input_file, output_file, str(window_size)]
+        print(f"[DEBUG] Executing command: {' '.join(cmd)}") # 方便调试
         
         # 记录任务
         tasks[task_id] = {
@@ -77,7 +74,12 @@ def analyze():
         }
         
         # 执行命令
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+        # 注意：这里设置了60秒超时，防止C++程序死循环
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+        except subprocess.TimeoutExpired:
+            print(f"[ERROR] Task {task_id} timed out!")
+            return jsonify({'success': False, 'error': 'Analysis timed out'}), 504
         
         if result.returncode == 0:
             # 读取结果
@@ -98,6 +100,9 @@ def analyze():
                 'full_output': output_content,
                 'output_file': os.path.basename(output_file)
             })
+        else:
+            print(f"[ERROR] C++ backend failed: {result.stderr}")
+            return jsonify({'success': False, 'error': f'Backend error: {result.stderr}'}), 500
         else:
             tasks[task_id]['status'] = 'failed'
             tasks[task_id]['error'] = result.stderr
