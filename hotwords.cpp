@@ -1,8 +1,4 @@
 
-// 项目名称：基于滑动窗口的热词统计与分析系统
-// 功能说明：实时处理文本数据流，维护滑动窗口内的词频统计，提供Top-K查询
-// 日期：2025年12月
-
 #include "cppjieba/Jieba.hpp"
 #include <iostream>
 #include <fstream>
@@ -19,7 +15,7 @@
 #include <cstdlib>
 
 
-// 时间戳结构 - 用于解析 [H:MM:SS] 格式的时间戳
+// 时间戳
 struct Timestamp {
     int hours;
     int minutes;
@@ -28,12 +24,12 @@ struct Timestamp {
     Timestamp() : hours(0), minutes(0), seconds(0) {}
     Timestamp(int h, int m, int s) : hours(h), minutes(m), seconds(s) {}
     
-    // 转换为总秒数
+   
     int toSeconds() const {
         return hours * 3600 + minutes * 60 + seconds;
     }
     
-    // 从秒数转换
+
     static Timestamp fromSeconds(int totalSeconds) {
         int h = totalSeconds / 3600;
         int m = (totalSeconds % 3600) / 60;
@@ -58,7 +54,7 @@ struct Timestamp {
     }
 };
 
-// 消息结构 - 存储带时间戳的消息
+
 struct Message {
     Timestamp timestamp;
     std::string content;
@@ -70,7 +66,7 @@ struct Message {
         : timestamp(ts), content(text), isQuery(false), queryK(0) {}
 };
 
-// 词频记录 - 用于Top-K堆
+// 词频
 struct WordFreq {
     std::string word;
     int count;
@@ -78,28 +74,28 @@ struct WordFreq {
     WordFreq() : word(""), count(0) {}
     WordFreq(const std::string& w, int c) : word(w), count(c) {}
     
-    // 小顶堆比较器 - count大的在堆顶
+   
     bool operator<(const WordFreq& other) const {
         if (count != other.count) return count > other.count;
-        return word < other.word; // 频率相同时按字典序
+        return word < other.word; 
     }
 };
 
-// 滑动窗口管理器 - 核心数据结构
+// 滑动窗口
 
 class SlidingWindow {
 private:
-    int windowSize;  // 窗口大小（秒）
-    std::unordered_map<std::string, int> wordCount;  // 当前窗口内的词频统计
-    std::queue<std::pair<Timestamp, std::vector<std::string>>> messageQueue;  // 消息队列
-    std::set<std::string> stopWords;  // 停用词集合
-    std::set<std::string> sensitiveWords;  // 敏感词集合
-    int totalWords;  // 窗口内总词数
-    Timestamp latestTime;  // 最新时间戳（用于检测乱序）
-    int outOfOrderCount;  // 乱序消息计数
-    int totalMessageCount;  // 总消息数
+    int windowSize;  
+    std::unordered_map<std::string, int> wordCount;  
+    std::queue<std::pair<Timestamp, std::vector<std::string>>> messageQueue;  
+    std::set<std::string> stopWords;  
+    std::set<std::string> sensitiveWords;  
+    int totalWords;  
+    Timestamp latestTime;  
+    int outOfOrderCount;  
+    int totalMessageCount;  
     
-    // 历史窗口快照 - 用于趋势分析
+    // 快照
     struct Snapshot {
         Timestamp timestamp;
         std::unordered_map<std::string, int> wordCount;
@@ -111,7 +107,7 @@ public:
     SlidingWindow(int winSize = 600) : windowSize(winSize), totalWords(0), 
                                         latestTime(0, 0, 0), outOfOrderCount(0), totalMessageCount(0) {}
     
-    // 加载停用词
+
     void loadStopWords(const std::string& filename) {
         std::ifstream ifs(filename);
         if (!ifs.is_open()) {
@@ -130,7 +126,7 @@ public:
         std::cout << "[INFO] Loaded " << stopWords.size() << " stop words." << std::endl;
     }
     
-    // 加载敏感词
+    
     void loadSensitiveWords(const std::string& filename) {
         std::ifstream ifs(filename);
         if (!ifs.is_open()) {
@@ -149,18 +145,18 @@ public:
         std::cout << "[INFO] Loaded " << sensitiveWords.size() << " sensitive words." << std::endl;
     }
     
-    // 添加消息到窗口（支持乱序检测）
+   
     void addMessage(const Timestamp& ts, const std::vector<std::string>& words) {
         totalMessageCount++;
         
-        // 检测乱序
+      
         if (ts < latestTime) {
             outOfOrderCount++;
         } else {
             latestTime = ts;
         }
         
-        // 过滤停用词和敏感词
+    
         std::vector<std::string> filteredWords;
         for (const auto& word : words) {
             if (stopWords.find(word) == stopWords.end() && 
@@ -172,14 +168,14 @@ public:
             }
         }
         
-        // 加入队列
+      
         messageQueue.push({ts, filteredWords});
         
-        // 移除过期消息
+      
         removeExpiredMessages(ts);
     }
     
-    // 移除过期消息
+    // 删掉过期的
     void removeExpiredMessages(const Timestamp& currentTime) {
         int currentSeconds = currentTime.toSeconds();
         int windowStart = currentSeconds - windowSize;
@@ -187,7 +183,7 @@ public:
         while (!messageQueue.empty()) {
             const auto& front = messageQueue.front();
             if (front.first.toSeconds() < windowStart) {
-                // 从词频统计中移除
+               
                 for (const auto& word : front.second) {
                     auto it = wordCount.find(word);
                     if (it != wordCount.end()) {
@@ -205,17 +201,17 @@ public:
         }
     }
     
-    // 获取Top-K热词
+    // Top-K
     std::vector<WordFreq> getTopK(int k) const {
         std::vector<WordFreq> result;
         for (const auto& pair : wordCount) {
             result.push_back(WordFreq(pair.first, pair.second));
         }
         
-        // 排序
+      
         std::sort(result.begin(), result.end());
         
-        // 取前K个
+        
         if (result.size() > (size_t)k) {
             result.resize(k);
         }
@@ -223,7 +219,7 @@ public:
         return result;
     }
     
-    // 保存当前窗口快照
+    // 存快照
     void saveSnapshot(const Timestamp& ts) {
         Snapshot snap;
         snap.timestamp = ts;
@@ -232,11 +228,11 @@ public:
         history.push_back(snap);
     }
     
-    // 获取词频趋势（增长率）
+    // 趋势
     double getTrend(const std::string& word) const {
         if (history.size() < 2) return 0.0;
         
-        // 比较最近两个窗口
+      
         const auto& current = wordCount;
         const auto& previous = history.back().wordCount;
         
@@ -256,14 +252,14 @@ public:
         return ((double)(currentCount - previousCount) / previousCount) * 100.0;
     }
     
-    // 获取窗口统计信息
+    // 统计
     void printStatistics() const {
         std::cout << "[STAT] Total unique words: " << wordCount.size() 
                   << ", Total words: " << totalWords 
                   << ", Messages in window: " << messageQueue.size() << std::endl;
     }
     
-    // 获取新兴热词
+    // 新兴词
     std::vector<std::pair<std::string, double>> getEmergingWords(double threshold = 50.0) const {
         std::vector<std::pair<std::string, double>> emerging;
         
@@ -280,8 +276,8 @@ public:
             int previousCount = (it != previous.end()) ? it->second : 0;
             
             if (previousCount == 0 && currentCount > 0) {
-                // 新词，增长率100%
-                if (currentCount >= 3) {  // 至少出现3次才算新兴
+              
+                if (currentCount >= 3) {  
                     emerging.push_back({word, 100.0});
                 }
             } else if (previousCount > 0) {
@@ -292,7 +288,7 @@ public:
             }
         }
         
-        // 按增长率降序排序
+        // 排序
         std::sort(emerging.begin(), emerging.end(), 
                   [](const std::pair<std::string, double>& a, const std::pair<std::string, double>& b) {
                       return a.second > b.second;
@@ -301,7 +297,7 @@ public:
         return emerging;
     }
     
-    // 获取降温热词（下降率超过阈值）
+    // 降温词
     std::vector<std::pair<std::string, double>> getCoolingWords(double threshold = 30.0) const {
         std::vector<std::pair<std::string, double>> cooling;
         
@@ -325,7 +321,7 @@ public:
             }
         }
         
-        // 按下降率降序排序
+        // 排序
         std::sort(cooling.begin(), cooling.end(), 
                   [](const std::pair<std::string, double>& a, const std::pair<std::string, double>& b) {
                       return a.second > b.second;
@@ -342,7 +338,7 @@ public:
         return totalMessageCount > 0 ? (double)outOfOrderCount / totalMessageCount * 100.0 : 0.0; 
     }
     
-    // 动态调整窗口大小
+    // 调窗口
     void setWindowSize(int newSize) {
         windowSize = newSize;
         std::cout << "[INFO] Window size changed to " << newSize << " seconds (" 
@@ -353,10 +349,9 @@ public:
 };
 
 
-// 工具函数
 
 
-// 解析时间戳 [H:MM:SS] 或 [H:M:S]
+// 解析时间
 bool parseTimestamp(const std::string& line, Timestamp& ts, std::string& content) {
     if (line.empty() || line[0] != '[') return false;
     
@@ -365,7 +360,7 @@ bool parseTimestamp(const std::string& line, Timestamp& ts, std::string& content
     
     std::string timeStr = line.substr(1, endBracket - 1);
     
-    // 解析时间
+  
     int h = 0, m = 0, s = 0;
     char colon1, colon2;
     std::istringstream iss(timeStr);
@@ -376,7 +371,7 @@ bool parseTimestamp(const std::string& line, Timestamp& ts, std::string& content
     
     ts = Timestamp(h, m, s);
     
-    // 提取内容
+    // 拿内容
     if (endBracket + 2 < line.length()) {
         content = line.substr(endBracket + 2);
     } else {
@@ -386,7 +381,7 @@ bool parseTimestamp(const std::string& line, Timestamp& ts, std::string& content
     return true;
 }
 
-// 解析QUERY命令
+// 解析QUERY
 bool parseQuery(const std::string& content, int& k) {
     if (content.find("[ACTION]") != std::string::npos && 
         content.find("QUERY") != std::string::npos) {
@@ -410,10 +405,10 @@ int main(int argc, char* argv[]) {
     std::cout << "  Hot Words Analysis System" << std::endl;
     std::cout << "========================================" << std::endl;
     
-    // 参数解析
+   
     std::string inputFile = "input1.txt";
     std::string outputFile = "hotwords_output.txt";
-    int windowSize = 600; // 默认10分钟窗口
+    int windowSize = 600; 
     
     if (argc >= 2) inputFile = argv[1];
     if (argc >= 3) outputFile = argv[2];
@@ -422,8 +417,7 @@ int main(int argc, char* argv[]) {
     std::cout << "[CONFIG] Input file: " << inputFile << std::endl;
     std::cout << "[CONFIG] Output file: " << outputFile << std::endl;
     std::cout << "[CONFIG] Window size: " << windowSize << " seconds" << std::endl;
-    
-    // 初始化Jieba分词器
+   
     std::cout << "[INIT] Initializing Jieba segmenter..." << std::endl;
     cppjieba::Jieba jieba(
         "dict/jieba.dict.utf8",
@@ -434,11 +428,11 @@ int main(int argc, char* argv[]) {
     );
     std::cout << "[INFO] Jieba initialized successfully." << std::endl;
     
-    // 初始化滑动窗口
+    // 初始化
     SlidingWindow window(windowSize);
     window.loadStopWords("dict/stop_words.utf8");
     
-    // 创建敏感词文件（如果不存在）
+    // 敏感词
     std::ifstream testSensitive("dict/sensitive_words.utf8");
     if (!testSensitive.is_open()) {
         std::ofstream createSensitive("dict/sensitive_words.utf8");
@@ -449,7 +443,7 @@ int main(int argc, char* argv[]) {
     }
     window.loadSensitiveWords("dict/sensitive_words.utf8");
     
-    // 读取输入文件
+    // 读文件
     std::cout << "[PROCESS] Reading input file..." << std::endl;
     std::ifstream ifs(inputFile);
     if (!ifs.is_open()) {
@@ -457,7 +451,7 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
     
-    // 打开输出文件
+    // 输出文件
     std::ofstream ofs(outputFile);
     if (!ofs.is_open()) {
         std::cerr << "[ERROR] Cannot open output file: " << outputFile << std::endl;
@@ -469,7 +463,7 @@ int main(int argc, char* argv[]) {
     ofs << "窗口大小: " << windowSize << " 秒 (" << (windowSize/60) << " 分钟)" << std::endl;
     ofs << "======================================" << std::endl << std::endl;
     
-    // 处理数据流
+    // 处理
     std::string line;
     int lineCount = 0;
     int queryCount = 0;
@@ -477,7 +471,7 @@ int main(int argc, char* argv[]) {
     while (std::getline(ifs, line)) {
         lineCount++;
         
-        // 移除Windows换行符
+        // 换行符
         if (!line.empty() && line.back() == '\r') {
             line.pop_back();
         }
@@ -488,7 +482,7 @@ int main(int argc, char* argv[]) {
         std::string content;
         
         if (!parseTimestamp(line, ts, content)) {
-            // 如果不是带时间戳的行，检查是否是QUERY命令
+           
             int k;
             if (parseQuery(line, k)) {
                 queryCount++;
@@ -501,7 +495,7 @@ int main(int argc, char* argv[]) {
                     ofs << "  " << (i+1) << ". " << topK[i].word 
                         << " (出现 " << topK[i].count << " 次)";
                     
-                    // 添加趋势信息
+                   
                     double trend = window.getTrend(topK[i].word);
                     if (trend > 0) {
                         ofs << " ↑" << std::fixed << std::setprecision(1) << trend << "%";
@@ -511,7 +505,7 @@ int main(int argc, char* argv[]) {
                     ofs << std::endl;
                 }
                 
-                // 显示新兴热词
+                // 新兴词
                 auto emerging = window.getEmergingWords(50.0);
                 if (!emerging.empty() && queryCount > 1) {
                     ofs << "\n  📈 新兴热词 (增长率>50%):" << std::endl;
@@ -521,7 +515,7 @@ int main(int argc, char* argv[]) {
                     }
                 }
                 
-                // 显示降温热词
+                // 降温词
                 auto cooling = window.getCoolingWords(30.0);
                 if (!cooling.empty() && queryCount > 1) {
                     ofs << "  📉 降温热词 (下降率>30%):" << std::endl;
@@ -538,7 +532,7 @@ int main(int argc, char* argv[]) {
             continue;
         }
         
-        // 检查是否是QUERY命令
+        // 检查QUERY
         int k;
         if (parseQuery(content, k)) {
             queryCount++;
@@ -551,7 +545,7 @@ int main(int argc, char* argv[]) {
                 ofs << "  " << (i+1) << ". " << topK[i].word 
                     << " (出现 " << topK[i].count << " 次)";
                 
-                // 添加趋势信息
+                // 趋势
                 double trend = window.getTrend(topK[i].word);
                 if (trend > 0) {
                     ofs << " ↑" << std::fixed << std::setprecision(1) << trend << "%";
@@ -561,7 +555,7 @@ int main(int argc, char* argv[]) {
                 ofs << std::endl;
             }
             
-            // 显示新兴热词
+            // 新兴词
             auto emerging = window.getEmergingWords(50.0);
             if (!emerging.empty() && queryCount > 1) {
                 ofs << "\n  📈 新兴热词 (增长率>50%):" << std::endl;
@@ -571,7 +565,7 @@ int main(int argc, char* argv[]) {
                 }
             }
             
-            // 显示降温热词
+            // 降温词
             auto cooling = window.getCoolingWords(30.0);
             if (!cooling.empty() && queryCount > 1) {
                 ofs << "  📉 降温热词 (下降率>30%):" << std::endl;
@@ -588,14 +582,14 @@ int main(int argc, char* argv[]) {
             continue;
         }
         
-        // 对内容进行分词
+        // 分词
         std::vector<std::string> words;
         jieba.Cut(content, words, true);
         
-        // 添加到滑动窗口
+        // 加到窗口
         window.addMessage(ts, words);
         
-        // 每1000行打印一次进度
+        // 进度
         if (lineCount % 1000 == 0) {
             std::cout << "[PROGRESS] Processed " << lineCount << " lines..." << std::endl;
         }
@@ -606,7 +600,7 @@ int main(int argc, char* argv[]) {
     std::cout << "[INFO] Out-of-order messages: " << window.getOutOfOrderCount() 
               << " (" << std::fixed << std::setprecision(2) << window.getOutOfOrderRate() << "%)" << std::endl;
     
-    // 如果查询次数少于2次，自动执行一次最终查询以便生成趋势分析
+    // 自动查询
     if (queryCount < 2 && lineCount > 0) {
         std::cout << "[AUTO] Executing automatic final query for trend analysis..." << std::endl;
         queryCount++;
@@ -618,7 +612,7 @@ int main(int argc, char* argv[]) {
             ofs << "  " << (i+1) << ". " << topK[i].word 
                 << " (出现 " << topK[i].count << " 次)";
             
-            // 添加趋势信息
+            // 趋势
             double trend = window.getTrend(topK[i].word);
             if (trend > 0) {
                 ofs << " ↑" << std::fixed << std::setprecision(1) << trend << "%";
@@ -628,7 +622,7 @@ int main(int argc, char* argv[]) {
             ofs << std::endl;
         }
         
-        // 显示新兴热词
+        // 新兴词
         auto emerging = window.getEmergingWords(50.0);
         if (!emerging.empty() && queryCount > 1) {
             ofs << "\n  📈 新兴热词 (增长率>50%):" << std::endl;
@@ -638,7 +632,7 @@ int main(int argc, char* argv[]) {
             }
         }
         
-        // 显示降温热词
+        // 降温词
         auto cooling = window.getCoolingWords(30.0);
         if (!cooling.empty() && queryCount > 1) {
             ofs << "  📉 降温热词 (下降率>30%):" << std::endl;
@@ -652,7 +646,7 @@ int main(int argc, char* argv[]) {
         window.saveSnapshot(Timestamp(99, 99, 99));
     }
     
-    // 输出最终统计
+    // 最终统计
     ofs << "\n===== 最终统计 =====" << std::endl;
     ofs << "处理的总行数: " << lineCount << std::endl;
     ofs << "处理的消息数: " << window.getTotalMessageCount() << std::endl;
@@ -663,7 +657,7 @@ int main(int argc, char* argv[]) {
     ofs << "乱序消息数: " << window.getOutOfOrderCount() 
         << " (" << std::fixed << std::setprecision(2) << window.getOutOfOrderRate() << "%)" << std::endl;
     
-    // 输出最终Top-20
+    // 最终Top-20
     ofs << "\n===== 最终 Top-20 热词 =====" << std::endl;
     auto finalTop = window.getTopK(20);
     for (size_t i = 0; i < finalTop.size(); ++i) {
