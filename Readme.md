@@ -35,26 +35,6 @@ docker-compose up -d
 - ✅ 安装 Python 依赖
 - ✅ 启动 Web 服务
 
-### 常用 Docker 命令
-
-```bash
-# 查看运行状态
-docker-compose ps
-
-# 查看日志
-docker-compose logs -f
-
-# 停止服务
-docker-compose down
-
-# 重启服务
-docker-compose restart
-
-# 更新并重启
-docker-compose up -d --build
-```
-
----
 
 ## ✨ 核心特性
 
@@ -144,7 +124,6 @@ hotwords-analysis/
 ├── 🌐 web_server.py          # Flask Web 服务器
 ├── 🐳 Dockerfile             # Docker 镜像配置
 ├── 🐳 docker-compose.yml     # Docker Compose 编排
-├── 🚀 start.sh               # 快速启动脚本
 ├── 🔨 Makefile               # 编译配置
 ├── 📋 templates/
 │   └── index.html           # Web 前端界面
@@ -174,20 +153,6 @@ RUN make                       # 编译 C++ 程序
 CMD ["python3", "web_server.py"]  # 启动服务
 ```
 
-### docker-compose.yml 说明
-
-```yaml
-version: '3.8'
-services:
-  hotwords-app:
-    build: .                    # 构建镜像
-    ports:
-      - "7070:5000"            # 端口映射 (主机:容器)
-    volumes:
-      - ./uploads:/app/uploads  # 文件上传目录
-      - ./test_results:/app/test_results  # 结果输出目录
-    restart: unless-stopped    # 自动重启
-```
 
 ### 端口修改
 
@@ -216,21 +181,9 @@ ports:
 
 ## 🐛 故障排除
 
-### Docker 相关问题
 
-#### 1. `docker-compose: command not found`
 
-**解决方案**:
-
-```bash
-# 方案 A: 安装 docker-compose
-pip3 install docker-compose
-
-# 方案 B: 使用新版 Docker CLI
-docker compose up -d  # 注意没有连字符
-```
-
-#### 2. 端口 7070 被占用
+####  端口 7070 被占用
 
 ```bash
 # 查看端口占用
@@ -241,32 +194,6 @@ vim docker-compose.yml
 # 改为: - "8080:5000"
 ```
 
-#### 3. 容器启动失败
-
-```bash
-# 查看详细日志
-docker-compose logs -f
-
-# 重新构建
-docker-compose down
-docker-compose up -d --build
-```
-
-### 本地部署问题
-
-#### 1. 编译错误: `Jieba.hpp not found`
-
-```bash
-# 确保头文件路径正确
-g++ -std=c++17 -O3 -o hotwords hotwords.cpp -I./cppjieba
-```
-
-#### 2. Python 模块缺失
-
-```bash
-# 安装依赖
-pip3 install flask flask-cors
-```
 
 ## 🤝 贡献
 
