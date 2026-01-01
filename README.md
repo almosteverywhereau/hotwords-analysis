@@ -27,7 +27,7 @@ cd hotwords-analysis
 docker-compose up -d
 
 # 3. 访问 Web 界面
-# 浏览器打开: http://localhost:5000
+# 浏览器打开: http://localhost:7070
 ```
 
 **就这么简单！** 🎉 系统会自动：
@@ -36,26 +36,6 @@ docker-compose up -d
 - ✅ 安装 Python 依赖
 - ✅ 启动 Web 服务
 
-### 常用 Docker 命令
-
-```bash
-# 查看运行状态
-docker-compose ps
-
-# 查看日志
-docker-compose logs -f
-
-# 停止服务
-docker-compose down
-
-# 重启服务
-docker-compose restart
-
-# 更新并重启
-docker-compose up -d --build
-```
-
----
 
 ## ✨ 核心特性
 
@@ -63,7 +43,6 @@ docker-compose up -d --build
 - 🔤 **中文分词**: 基于 CppJieba 的高效中文分词
 - 📊 **滑动窗口**: 动态追踪热词变化趋势
 - 🏆 **Top-K查询**: 实时热词排行榜
-- 📈 **趋势分析**: 词频变化可视化图表
 - 🔍 **智能过滤**: TF-IDF 算法 + 停用词过滤
 - � **容器化部署**: Docker 一键启动
 - 🌐 **Web界面**: 美观的可视化界面
@@ -96,51 +75,6 @@ docker-compose up -d --build
 
 ---
 
-## 🛠️ 本地部署（不使用 Docker）
-
-### 前置要求
-
-- **编译器**: GCC 7+ / Clang 5+ (支持 C++17)
-- **Python**: 3.8+
-- **Make**: 构建工具
-
-### 安装步骤
-
-```bash
-# 1. 克隆项目
-git clone https://github.com/yourusername/hotwords-analysis.git
-cd hotwords-analysis
-cd hotwords-analysis
-
-# 2. 编译 C++ 程序
-g++ -std=c++17 -O3 -o hotwords hotwords.cpp \
-    -I./cppjieba -pthread
-
-# 3. 安装 Python 依赖
-pip install -r requirements.txt
-
-# 2. 安装 Python 依赖
-pip3 install flask flask-cors
-
-# 3. 编译 C++ 程序
-make
-
-# 4. 启动 Web 服务
-python3 web_server.py
-
-# 5. 浏览器访问
-# http://localhost:5000
-```
-
-### 或使用快速启动脚本
-
-```bash
-chmod +x start.sh
-./start.sh
-# 选择部署方式（Docker 或本地）
-```
-
----
 
 ## 📊 测试数据
 
@@ -179,46 +113,6 @@ hotwords-analysis/
 
 ---
 
-## 🐳 Docker 详细说明
-
-### Dockerfile 说明
-
-```dockerfile
-FROM ubuntu:22.04              # 基础镜像
-RUN apt-get install g++ make   # 安装编译工具
-RUN pip3 install flask         # 安装 Python 依赖
-COPY . /app/                   # 复制项目文件
-RUN make                       # 编译 C++ 程序
-CMD ["python3", "web_server.py"]  # 启动服务
-```
-
-### docker-compose.yml 说明
-
-```yaml
-version: '3.8'
-services:
-  hotwords-app:
-    build: .                    # 构建镜像
-    ports:
-      - "5000:5000"            # 端口映射 (主机:容器)
-    volumes:
-      - ./uploads:/app/uploads  # 文件上传目录
-      - ./test_results:/app/test_results  # 结果输出目录
-    restart: unless-stopped    # 自动重启
-```
-
-### 端口修改
-
-如果 5000 端口被占用，修改 `docker-compose.yml`:
-
-```yaml
-ports:
-  - "8080:5000"  # 改为 8080 或其他端口
-```
-
-然后访问 `http://localhost:8080`
-
----
 
 ## 🔧 技术栈
 
@@ -228,89 +122,10 @@ ports:
 | **中文分词** | CppJieba | 高性能分词引擎 |
 | **Web 服务** | Flask | Python Web 框架 |
 | **前端界面** | HTML/CSS/JS | 响应式界面设计 |
-| **数据可视化** | Chart.js | 动态图表展示 |
 | **容器化** | Docker | 一键部署 |
 
 ---
 
-## 🐛 故障排除
-
-### Docker 相关问题
-
-#### 1. `docker-compose: command not found`
-
-**解决方案**:
-
-```bash
-# 方案 A: 安装 docker-compose
-pip3 install docker-compose
-
-# 方案 B: 使用新版 Docker CLI
-docker compose up -d  # 注意没有连字符
-```
-
-#### 2. 端口 5000 被占用
-
-```bash
-# 查看端口占用
-lsof -i :5000
-
-# 修改端口映射
-vim docker-compose.yml
-# 改为: - "8080:5000"
-```
-
-#### 3. 容器启动失败
-
-```bash
-# 查看详细日志
-docker-compose logs -f
-
-# 重新构建
-docker-compose down
-docker-compose up -d --build
-```
-
-### 本地部署问题
-
-#### 1. 编译错误: `Jieba.hpp not found`
-
-```bash
-# 确保头文件路径正确
-g++ -std=c++17 -O3 -o hotwords hotwords.cpp -I./cppjieba
-```
-
-#### 2. Python 模块缺失
-
-```bash
-# 安装依赖
-pip3 install flask flask-cors
-```
-
-#### 3. 权限问题
-
-```bash
-# 添加执行权限
-chmod +x hotwords
-chmod +x start.sh
-```
-
-### 分析结果问题
-
-#### Q: Top-K 显示少于 10 个词？
-
-**这是正常现象！** 可能原因:
-
-- ✅ 窗口内有效词汇少于 K
-- ✅ 滑动到文件末尾，剩余句子不足
-- ✅ 停用词过滤后词汇不足
-
-**建议**:
-- 增大窗口大小
-- 减小 K 值
-- 检查输入数据质量
-
----
 
 ## 🤝 贡献
 
